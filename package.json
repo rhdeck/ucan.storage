@@ -5,7 +5,7 @@
   "type": "commonjs",
   "license": "MIT",
   "repository": {
-    "url": "nftstorage/ucan.storage"
+    "url": "rhdeck/ucan.storage"
   },
   "bin": {
     "ucan-storage": "./dist/src/cli.js"

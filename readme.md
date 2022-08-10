@@ -1,4 +1,15 @@
-# UCAN.Storage
+# UCAN-Storage-Commonjs
+
+This project implements the UCAN.Storage reference specification in typescript and builds using a commonJS package for greater compatibility with server-side nodejs environments, including using webpack. 
+
+Shape for this library is the same as found in the [ucan-storage documentation](https://nftstorage.github.io/ucan.storage/) with the note that this library is `ucan-storage-commonjs` rather than `ucan-storage`
+
+I made this library to be more compatible with webpack and node, which often works with commonjs instead of a module. The original ESModule javascript just migrated to typescript for tighter typechecking, and then tsc compiles into babelized commonjs with source maps.
+
+Thank you to Protocol Labs and the UCAN research team for making the original reference spec and furthering the mission of distributed identity! 
+
+
+## UCAN.Storage
 
 This project defines a [specification][spec] for delegated authorization of decentralized storage services using [UCAN][ucan-intro], or User Controlled Authorization Networks.
 
