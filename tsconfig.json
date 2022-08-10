@@ -13,9 +13,8 @@
       "ES2020.BigInt",
       "DOM"
     ],
-    "noEmit": false,
+    "module": "commonjs",
     "noEmitOnError": true,
-    "emitDeclarationOnly": true,
     "sourceMap": false,
     "declaration": true,
     "declarationMap": true,

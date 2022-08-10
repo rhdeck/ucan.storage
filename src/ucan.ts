@@ -7,6 +7,14 @@ import {
   isExpired,
   isTooEarly,
 } from './utils.js'
+import type {
+  BuildParams,
+  BuildPayload,
+  UcanHeader,
+  UcanPayload,
+  ValidateOptions,
+} from './types.js'
+import type { KeyPair } from './keypair.js'
 
 const TYPE = 'JWT'
 const VERSION = '0.8.0'
@@ -19,14 +27,14 @@ export { KeyPair } from './keypair.js'
  * @param {import("./types").BuildParams} params
  * @returns {Promise<import('./types').UcanWithJWT>}
  */
-export async function build(params) {
+export async function build(params: BuildParams): ReturnType<typeof sign> {
   const keypair = params.issuer
   const didStr = publicKeyBytesToDid(keypair.publicKey)
   const payload = buildPayload({
     ...params,
     issuer: didStr,
   })
-  return sign(payload, keypair)
+  return await sign(payload, keypair)
 }
 
 /**
@@ -34,7 +42,7 @@ export async function build(params) {
  *
  * @param {import('./types').BuildPayload} params
  */
-function buildPayload(params) {
+function buildPayload(params: BuildPayload) {
   const {
     issuer,
     audience,
@@ -49,7 +57,7 @@ function buildPayload(params) {
 
   // Timestamps
   const currentTimeInSeconds = Math.floor(Date.now() / 1000)
-  const exp = expiration || currentTimeInSeconds + lifetimeInSeconds
+  const exp = expiration ?? currentTimeInSeconds + lifetimeInSeconds
 
   /** @type {import('./types').UcanPayload} */
   const payload = {
@@ -74,7 +82,19 @@ function buildPayload(params) {
  *
  * @returns {Promise<import('./types').UcanWithJWT>}
  */
-export async function sign(payload, keypair) {
+export async function sign(
+  payload: ReturnType<typeof buildPayload>,
+  keypair: KeyPair
+): Promise<{
+  header: {
+    alg: string
+    typ: string
+    ucv: string
+  }
+  payload: any
+  signature: any
+  jwt: string
+}> {
   /** @type {import('./types').UcanHeader} */
   const header = {
     alg: 'EdDSA',
@@ -104,7 +124,14 @@ export async function sign(payload, keypair) {
  *
  * @returns {Promise<import('./types').Ucan>}
  */
-export async function validate(encodedUcan, options = {}) {
+export async function validate(
+  encodedUcan: string,
+  options: ValidateOptions = {}
+): Promise<{
+  header: UcanHeader
+  payload: UcanPayload
+  signature: Uint8Array
+}> {
   /** @type {import('./types').ValidateOptions} */
   const opts = {
     checkIssuer: true,
@@ -126,12 +153,10 @@ export async function validate(encodedUcan, options = {}) {
     )
   }
 
-  const header = /** @type {import('./types').UcanHeader} */ (
-    deserialize(encodedHeader)
-  )
-  const payload = /** @type {import('./types').UcanPayload} */ (
-    deserialize(encodedPayload)
-  )
+  const header =
+    /** @type {import('./types').UcanHeader} */ deserialize(encodedHeader)
+  const payload =
+    /** @type {import('./types').UcanPayload} */ deserialize(encodedPayload)
 
   const signature = base64url.decode(encodedSignature)
 
@@ -171,7 +196,7 @@ export async function validate(encodedUcan, options = {}) {
  *
  * @param {string} encodedUcan
  */
-export function isUcan(encodedUcan) {
+export function isUcan(encodedUcan: string): boolean {
   const [encodedHeader, encodedPayload, encodedSignature] =
     encodedUcan.split('.')
   if (
@@ -182,9 +207,8 @@ export function isUcan(encodedUcan) {
     return false
   }
 
-  const header = /** @type {import('./types').UcanHeader} */ (
-    deserialize(encodedHeader)
-  )
+  const header =
+    /** @type {import('./types').UcanHeader} */ deserialize(encodedHeader)
 
   if (typeof header.ucv === 'string') {
     return true

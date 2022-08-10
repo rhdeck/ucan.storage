@@ -1,11 +1,12 @@
 import { base64url, utf8 } from './encoding.js'
+import type { KeyType, UcanPayload } from './types.js'
 
 /**
  * Concat Uint8Arrays
  *
  * @param {Uint8Array[]} arrays
  */
-export function concatUint8(arrays) {
+export function concatUint8(arrays: Uint8Array[]) {
   let totalLength = 0
   for (const arr of arrays) {
     totalLength += arr.length
@@ -25,7 +26,7 @@ export function concatUint8(arrays) {
  * @param {Uint8Array} a
  * @param {Uint8Array} b
  */
-export function equals(a, b) {
+export function equals(a: Uint8Array, b: Uint8Array) {
   if (a === b) {
     return true
   }
@@ -48,7 +49,7 @@ export function equals(a, b) {
  *
  * @param {any} input - JSON input
  */
-export function serialize(input) {
+export function serialize(input: any) {
   return base64url.encode(utf8.decode(JSON.stringify(input)))
 }
 
@@ -57,7 +58,7 @@ export function serialize(input) {
  *
  * @param {string} input
  */
-export function deserialize(input) {
+export function deserialize(input: string) {
   let headerUtf8
 
   try {
@@ -81,7 +82,7 @@ export function deserialize(input) {
  *
  * @param {import('./types.js').KeyType} keyType
  */
-export function jwtAlgorithm(keyType) {
+export function jwtAlgorithm(keyType: KeyType) {
   switch (keyType) {
     case 'ed25519':
       return 'EdDSA'
@@ -95,7 +96,7 @@ export function jwtAlgorithm(keyType) {
  *
  * @param {import('./types.js').UcanPayload} payload
  */
-export function isExpired(payload) {
+export function isExpired(payload: UcanPayload) {
   return payload.exp <= Math.floor(Date.now() / 1000)
 }
 
@@ -104,7 +105,7 @@ export function isExpired(payload) {
  *
  * @param {import('./types.js').UcanPayload} payload
  */
-export function isTooEarly(payload) {
+export function isTooEarly(payload: UcanPayload) {
   if (!payload.nbf) {
     return false
   }

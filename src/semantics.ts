@@ -5,8 +5,9 @@ import {
   CapabilityParseError,
   CapabilityUnrelatedError,
 } from './errors.js'
+import type { Capability } from './types.js'
 
-const uploadLevels = {
+const uploadLevels: Record<string, number> = {
   'upload/*': 0,
   'upload/IMPORT': -1,
 }
@@ -16,7 +17,7 @@ const PREFIX = 'storage://'
  * @type {import('./types').CapabilitySemantics<import('./types').StorageSemantics>}
  */
 export const storageSemantics = {
-  tryParsing(cap) {
+  tryParsing(cap: Capability) {
     if (typeof cap.with !== 'string') {
       return new CapabilityParseError('"with" must be a string.', cap)
     }
@@ -50,7 +51,7 @@ export const storageSemantics = {
     return new CapabilityParseError('Capability is not supported.', cap)
   },
 
-  tryDelegating(parentCap, childCap) {
+  tryDelegating(parentCap: Capability, childCap: Capability) {
     // check for unrelated caps
     if (
       !parentCap.with.startsWith(PREFIX) ||

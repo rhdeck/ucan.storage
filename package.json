@@ -1,25 +1,24 @@
 {
-  "name": "ucan-storage",
+  "name": "ucan-storage-commonjs",
   "version": "1.3.0",
-  "main": "src/index.js",
-  "types": "dist/src/index.d.ts",
-  "type": "module",
+  "main": "dist/src/index.js",
+  "type": "commonjs",
   "license": "MIT",
   "repository": {
     "url": "nftstorage/ucan.storage"
   },
   "bin": {
-    "ucan-storage": "./src/cli.js"
+    "ucan-storage": "./dist/src/cli.js"
   },
   "exports": {
-    ".": "./src/index.js",
-    "./keypair": "./src/keypair.js",
+    ".": "./dist/src/index.js",
+    "./keypair": "./dist/src/keypair.js",
     "./types": "./src/types.ts",
-    "./did": "./src/did.js",
-    "./service": "./src/service.js",
-    "./ucan-storage": "./src/ucan-storage.js",
-    "./ucan-chain": "./src/ucan-chain.js",
-    "./ucan": "./src/ucan.js"
+    "./did": "./dist/src/did.js",
+    "./service": "./dist/src/service.js",
+    "./ucan-storage": "./dist/src/ucan-storage.js",
+    "./ucan-chain": "./dist/src/ucan-chain.js",
+    "./ucan": "./dist/src/ucan.js"
   },
   "typesVersions": {
     "*": {
@@ -29,19 +28,19 @@
     }
   },
   "scripts": {
+    "build": "tsc && yarn pack -f package.tgz",
     "format": "prettier --write '**/*.{js,ts,yml,json}' --ignore-path .gitignore",
     "format:check": "prettier --check '**/*.{js,ts,yml,json}' --ignore-path .gitignore",
     "clean": "rm -rf node_modules yarn.lock dist pnpm-lock.yaml",
-    "docs": "pnpm run lint && typedoc src/ucan-storage.js src/keypair.js --out docs",
-    "lint": "eslint '**/*.{js,ts,.d.ts}' && pnpm run format:check && tsc",
+    "docs": "yarn lint && typedoc src/ucan-storage.ts src/keypair.ts --out docs",
+    "lint": "tsc --noEmit",
     "test": "uvu tests",
     "test-browser": "pw-test tests --runner uvu",
     "test:watch": "watchlist src tests -- yarn test"
   },
   "files": [
     "src",
-    "dist/src/*.d.ts",
-    "dist/src/*.d.ts.map"
+    "dist"
   ],
   "dependencies": {
     "@noble/ed25519": "^1.5.2",
@@ -50,6 +49,8 @@
   },
   "devDependencies": {
     "@types/node": "^17.0.21",
+    "eslint-plugin-etc": "^2.0.2",
+    "eslint-plugin-unicorn": "^43.0.2",
     "hd-scripts": "^1.1.0",
     "lint-staged": "^12.3.5",
     "playwright-test": "^7.2.2",
@@ -70,11 +71,6 @@
   "lint-staged": {
     "*.{js,ts,d.ts,yml,json}": "prettier --write",
     "*.js": "eslint --fix"
-  },
-  "eslintConfig": {
-    "extends": [
-      "./node_modules/hd-scripts/eslint/index.js"
-    ]
   },
   "prettier": "./node_modules/hd-scripts/prettier.config.js",
   "eslintIgnore": [

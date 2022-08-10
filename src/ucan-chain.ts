@@ -1,11 +1,20 @@
-import * as ucan from './ucan.js'
+import type {
+  Capability,
+  CapabilitySemantics,
+  Ucan,
+  ValidateOptions,
+} from './types'
+import { validate } from './ucan'
 
 /**
  * @template A
  * @param {import('./types').CapabilitySemantics<A>} semantics
  * @param {UcanChain} ucan
  */
-export function* findValidCaps(semantics, ucan) {
+export function* findValidCaps<A>(
+  semantics: CapabilitySemantics<A>,
+  ucan: UcanChain
+) {
   const caps = ucan.capabilities()
   const parentCaps = []
 
@@ -47,7 +56,11 @@ export function* findValidCaps(semantics, ucan) {
  * @param {A} capParsed
  * @param {import('./types').CapabilitySemantics<A>} semantics
  */
-function canDelegate(ucan, capParsed, semantics) {
+function canDelegate<A>(
+  ucan: UcanChain,
+  capParsed: A,
+  semantics: CapabilitySemantics<A>
+) {
   const ucanCapsParsed = findValidCaps(semantics, ucan)
   let escalation
 
@@ -75,7 +88,11 @@ function canDelegate(ucan, capParsed, semantics) {
  * @param {import('./types').CapabilitySemantics<A>} semantics
  * @returns {UcanChain}
  */
-function findRoot(ucan, capParsed, semantics) {
+function findRoot<A>(
+  ucan: UcanChain,
+  capParsed: A,
+  semantics: CapabilitySemantics<A>
+): UcanChain {
   const proofs = ucan.proofs()
   if (proofs.length === 0) {
     return ucan
@@ -104,7 +121,9 @@ export class UcanChain {
    * @param {string} encoded
    * @param {import('./types').Ucan<UcanChain>} decoded
    */
-  constructor(encoded, decoded) {
+  _encoded: string
+  _decoded: Ucan<UcanChain>
+  constructor(encoded: string, decoded: Ucan<UcanChain>) {
     this._encoded = encoded
     this._decoded = decoded
   }
@@ -116,14 +135,17 @@ export class UcanChain {
    * @param {import('./types').ValidateOptions} [options]
    * @returns {Promise<UcanChain>}
    */
-  static async fromToken(encodedUcan, options) {
-    const token = await ucan.validate(encodedUcan, options)
+  static async fromToken(
+    encodedUcan: string,
+    options: ValidateOptions
+  ): Promise<UcanChain> {
+    const token = await validate(encodedUcan, options)
 
     // parse proofs recursively
-    const proofs = await Promise.all(
-      token.payload.prf.map((encodedPrf) =>
-        UcanChain.fromToken(encodedPrf, options)
-      )
+    const proofs: UcanChain[] = await Promise.all(
+      token.payload.prf.map(async (encodedPrf) => {
+        return await UcanChain.fromToken(encodedPrf, options)
+      })
     )
 
     // check sender/receiver matchups. A parent ucan's audience must match the child ucan's issuer
@@ -131,7 +153,7 @@ export class UcanChain {
       (proof) => proof.audience() !== token.payload.iss
     )
 
-    if (incorrectProof) {
+    if (incorrectProof !== undefined) {
       throw new Error(
         `Invalid UCAN: Audience ${incorrectProof.audience()} doesn't match issuer ${
           token.payload.iss
@@ -156,8 +178,8 @@ export class UcanChain {
    * @template A
    * @param {import('./types').CapabilitySemantics<A>} semantics
    */
-  caps(semantics) {
-    const validCaps = []
+  caps<A>(semantics: CapabilitySemantics<A>) {
+    const validCaps: Array<{ root: UcanChain; cap: A }> = []
     for (const cap of findValidCaps(semantics, this)) {
       try {
         const root = findRoot(this, cap, semantics)
@@ -173,7 +195,7 @@ export class UcanChain {
    * @param {import('./types').Capability} cap
    * @param {import('./types').CapabilitySemantics<A>} semantics
    */
-  claim(cap, semantics) {
+  claim(cap: Capability, semantics: CapabilitySemantics<any>) {
     const capParsed = semantics.tryParsing(cap)
     if (capParsed instanceof Error) {
       throw capParsed
@@ -187,15 +209,15 @@ export class UcanChain {
     }
   }
 
-  proofs() {
+  proofs(): UcanChain[] {
     return this._decoded.payload.prf
   }
 
-  audience() {
+  audience(): string {
     return this._decoded.payload.aud
   }
 
-  issuer() {
+  issuer(): string {
     return this._decoded.payload.iss
   }
 
@@ -205,7 +227,7 @@ export class UcanChain {
    *
    * @returns {import('./types').Ucan<never>}
    */
-  payload() {
+  payload(): Ucan<never> {
     return {
       ...this._decoded,
       payload: {
@@ -215,7 +237,7 @@ export class UcanChain {
     }
   }
 
-  capabilities() {
+  capabilities(): Capability[] {
     return this._decoded.payload.att
   }
 }

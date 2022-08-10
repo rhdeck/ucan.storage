@@ -1,6 +1,7 @@
 import { concatUint8, equals } from './utils.js'
 import * as ed from '@noble/ed25519'
 import { base58btc, utf8 } from './encoding.js'
+import type { KeyType } from './types.js'
 
 export const BASE58_DID_PREFIX = 'did:key:z' // z is the multibase prefix for base58btc byte encoding
 /** https://github.com/multiformats/multicodec/blob/e9ecf587558964715054a0afcc01f7ace220952c/table.csv#L94 */
@@ -11,7 +12,7 @@ export const EDWARDS_DID_PREFIX = new Uint8Array([0xed, 0x01])
  *
  * @param {Uint8Array} publicKeyBytes
  */
-export function publicKeyBytesToDid(publicKeyBytes) {
+export function publicKeyBytesToDid(publicKeyBytes: Uint8Array) {
   const prefixedBytes = concatUint8([EDWARDS_DID_PREFIX, publicKeyBytes])
 
   // Encode prefixed
@@ -23,7 +24,7 @@ export function publicKeyBytesToDid(publicKeyBytes) {
  *
  * @param {string} did
  */
-export function parse(did) {
+export function parse(did: string) {
   if (!(typeof did === 'string')) {
     throw new TypeError('did must be a string')
   }
@@ -46,7 +47,7 @@ export function parse(did) {
  *
  * @param {string} did
  */
-export function didToPublicKeyBytes(did) {
+export function didToPublicKeyBytes(did: string) {
   const parsed = parse(did)
 
   return parsed.publicKey
@@ -57,7 +58,7 @@ export function didToPublicKeyBytes(did) {
  *
  * @param {string} did
  */
-export function didKeyType(did) {
+export function didKeyType(did: string) {
   const parsed = parse(did)
 
   return parsed.type
@@ -67,7 +68,10 @@ export function didKeyType(did) {
  * @param {Uint8Array} key
  * @returns {{keyBytes: Uint8Array, type: import('./types.js').KeyType}}
  */
-export function parseMagicBytes(key) {
+export function parseMagicBytes(key: Uint8Array): {
+  keyBytes: Uint8Array
+  type: KeyType
+} {
   if (hasPrefix(key, EDWARDS_DID_PREFIX)) {
     return {
       keyBytes: key.slice(EDWARDS_DID_PREFIX.byteLength),
@@ -84,7 +88,10 @@ export function parseMagicBytes(key) {
  * @param {Uint8Array} prefixedKey
  * @param {Uint8Array} prefix
  */
-export function hasPrefix(prefixedKey, prefix) {
+export function hasPrefix(
+  prefixedKey: Uint8Array,
+  prefix: Uint8Array
+): boolean {
   return equals(prefix, prefixedKey.subarray(0, prefix.byteLength))
 }
 
@@ -93,6 +100,10 @@ export function hasPrefix(prefixedKey, prefix) {
  * @param {Uint8Array} signature
  * @param {string} did
  */
-export function verify(data, signature, did) {
-  return ed.verify(signature, utf8.decode(data), didToPublicKeyBytes(did))
+export async function verify(
+  data: string,
+  signature: Uint8Array,
+  did: string
+): Promise<boolean> {
+  return await ed.verify(signature, utf8.decode(data), didToPublicKeyBytes(did))
 }

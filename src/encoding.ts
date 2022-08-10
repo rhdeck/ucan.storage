@@ -9,10 +9,15 @@ import baseX from 'base-x'
  * @param {string} name
  * @returns {Uint8Array}
  */
-const decode = (string, alphabet, bitsPerChar, name) => {
+const decode = (
+  string: string,
+  alphabet: string,
+  bitsPerChar: number,
+  name: string
+) => {
   // Build the character lookup table:
   /** @type {Record<string, number>} */
-  const codes = {}
+  const codes: Record<string, number> = {}
   // eslint-disable-next-line unicorn/no-for-loop
   for (let i = 0; i < alphabet.length; ++i) {
     codes[alphabet[i]] = i
@@ -65,7 +70,7 @@ const decode = (string, alphabet, bitsPerChar, name) => {
  * @param {number} bitsPerChar
  * @returns {string}
  */
-const encode = (data, alphabet, bitsPerChar) => {
+const encode = (data: Uint8Array, alphabet: string, bitsPerChar: number) => {
   const pad = alphabet[alphabet.length - 1] === '='
   const mask = (1 << bitsPerChar) - 1
   let out = ''
@@ -107,19 +112,27 @@ const encode = (data, alphabet, bitsPerChar) => {
  * @param {string} options.alphabet
  * @param {number} options.bitsPerChar
  */
-export const rfc4648 = ({ name, bitsPerChar, alphabet }) => {
+export const rfc4648 = ({
+  name,
+  bitsPerChar,
+  alphabet,
+}: {
+  name: string
+  bitsPerChar: number
+  alphabet: string
+}) => {
   return {
     /**
      * @param {Uint8Array} input
      */
-    encode(input) {
+    encode(input: Uint8Array) {
       return encode(input, alphabet, bitsPerChar)
     },
     /**
      * @param {string} input
      * @returns {Uint8Array}
      */
-    decode(input) {
+    decode(input: string) {
       return decode(input, alphabet, bitsPerChar, name)
     },
   }
@@ -145,7 +158,7 @@ export const utf8 = {
   /**
    * @param {Uint8Array} input
    */
-  encode(input) {
+  encode(input: Uint8Array) {
     const decoder = new TextDecoder('utf8')
     return decoder.decode(input)
   },
@@ -153,7 +166,7 @@ export const utf8 = {
    * @param {string} input
    * @returns {Uint8Array}
    */
-  decode(input) {
+  decode(input: string) {
     const encoder = new TextEncoder()
     return encoder.encode(input)
   },

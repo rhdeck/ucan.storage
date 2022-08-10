@@ -14,7 +14,10 @@ export class KeyPair {
    * @param {Uint8Array} privateKey - private key bytes
    * @param {Uint8Array} publicKey - public key bytes
    */
-  constructor(privateKey, publicKey) {
+  publicKey: Uint8Array
+  privateKey: Uint8Array
+  pubStr?: string
+  constructor(privateKey: Uint8Array, publicKey: Uint8Array) {
     this.publicKey = publicKey
     this.privateKey = privateKey
     this.pubStr = undefined
@@ -25,7 +28,7 @@ export class KeyPair {
    *
    * @returns {Promise<KeyPair>} a Promise that resolves to the generated KeyPair
    */
-  static async create() {
+  static async create(): Promise<KeyPair> {
     const privateKeyRaw = ed.utils.randomPrivateKey()
     const publicKey = await ed.getPublicKey(privateKeyRaw)
 
@@ -38,7 +41,7 @@ export class KeyPair {
    * @param {string} key - a private key, as encoded by {@link export}
    * @returns {Promise<KeyPair>} a Promise that resolves to the loaded KeyPair object
    */
-  static async fromExportedKey(key) {
+  static async fromExportedKey(key: string): Promise<KeyPair> {
     const privateKey = base64Pad.decode(key)
     return new KeyPair(privateKey, await ed.getPublicKey(privateKey))
   }
@@ -48,7 +51,7 @@ export class KeyPair {
    *
    * @returns {string} the public key, as a base64 encoded string (padded).
    */
-  publicKeyStr() {
+  publicKeyStr(): string {
     if (this.pubStr === undefined) {
       this.pubStr = base64Pad.encode(this.publicKey)
     }
@@ -60,7 +63,7 @@ export class KeyPair {
    *
    * @returns {string} the public key, encoded into a `did:key:` DID string.
    */
-  did() {
+  did(): string {
     return publicKeyBytesToDid(this.publicKey)
   }
 
@@ -70,8 +73,8 @@ export class KeyPair {
    * @param {Uint8Array} msg - a message to sign
    * @returns {Promise<Uint8Array>} a Promise that resolves to the signature (as a Uint8Array)
    */
-  sign(msg) {
-    return ed.sign(msg, this.privateKey)
+  async sign(msg: Uint8Array): Promise<Uint8Array> {
+    return await ed.sign(msg, this.privateKey)
   }
 
   /**
@@ -80,7 +83,7 @@ export class KeyPair {
    *
    * @returns {string} the encoded private key string
    */
-  export() {
+  export(): string {
     return base64Pad.encode(this.privateKey)
   }
 }

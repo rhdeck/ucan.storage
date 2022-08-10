@@ -2,19 +2,20 @@ import * as ucan from './ucan-storage.js'
 import { UcanChain } from './ucan-chain.js'
 import { KeyPair } from './keypair.js'
 import { storageSemantics } from './semantics.js'
-
+import type { Capability } from './types.js'
 export class Service {
+  keypair: KeyPair
   /**
    * @param {KeyPair} keypair
    */
-  constructor(keypair) {
+  constructor(keypair: KeyPair) {
     this.keypair = keypair
   }
 
   /**
    * @param {string} key
    */
-  static async fromPrivateKey(key) {
+  static async fromPrivateKey(key: string) {
     const kp = await KeyPair.fromExportedKey(key)
     return new Service(kp)
   }
@@ -30,7 +31,7 @@ export class Service {
    * @param {import('./types.js').Capability} capability
    * @returns {Promise<UcanChain>} Returns the root ucan for capability
    */
-  async validate(encodedUcan, capability) {
+  async validate(encodedUcan: string, capability: Capability) {
     const token = await UcanChain.fromToken(encodedUcan, {})
 
     if (token.audience() !== this.did()) {
@@ -51,7 +52,7 @@ export class Service {
    *
    * @param {string} encodedUcan
    */
-  async validateFromCaps(encodedUcan) {
+  async validateFromCaps(encodedUcan: string) {
     const token = await UcanChain.fromToken(encodedUcan, {})
     if (token.audience() !== this.did()) {
       throw new Error('Invalid UCAN: Audience does not match this service.')
@@ -73,7 +74,7 @@ export class Service {
   /**
    * @param {string} did
    */
-  ucan(did) {
+  ucan(did: string) {
     const ttl = 1_209_600 // 2 weeks
 
     return ucan.build({
@@ -88,7 +89,7 @@ export class Service {
    * @param {string} encodedUcan
    * @param {string} did
    */
-  async refresh(encodedUcan, did) {
+  async refresh(encodedUcan: string, did: string) {
     const token = await UcanChain.fromToken(encodedUcan, {})
 
     if (token.issuer() !== did) {

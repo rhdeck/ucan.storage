@@ -1,5 +1,10 @@
 import * as Ucan from './ucan.js'
 import { storageSemantics } from './semantics.js'
+import type {
+  UcanStorageOptions,
+  ValidateOptions,
+  ValidateResult,
+} from './types.js'
 
 /**
  * Construct and sign a new UCAN token with the given {@link UcanStorageOptions}.
@@ -8,7 +13,7 @@ import { storageSemantics } from './semantics.js'
  * @param {import('./types').UcanStorageOptions} params
  * @returns {Promise<string>} a Promise that resolves to the encoded JWT representation of the signed UCAN token.
  */
-export async function build(params) {
+export async function build(params: UcanStorageOptions) {
   const { capabilities } = params
 
   for (const cap of capabilities) {
@@ -38,8 +43,11 @@ export async function build(params) {
  * @param {import('./types').ValidateOptions} [options] - flags to optionally skip portions of the validation process. If not set, all flags default to `true`, meaning checks will be performed.
  * @returns {Promise<import('./types').ValidateResult>} a Promise that resolves to a {@link ValidateResult} if the token is valid, or rejects with an `Error` if validation fails.
  */
-export function validate(jwt, options) {
-  return Ucan.validate(jwt, options)
+export async function validate(
+  jwt: string,
+  options?: ValidateOptions
+): Promise<ValidateResult> {
+  return await Ucan.validate(jwt, options)
 }
 
 export { isUcan } from './ucan.js'
